@@ -3,3 +3,15 @@ __pycache__/
 *.pyc
 .netlify/
 dist/
+
+# 一次性内容生成脚本（仅本地用，不发布、不入库）
+fill_explains.py
+deepen_explains.py
+deepen2.py
+deepen3.py
+deepen4.py
+assign_ids.py
+add_digest_links.py
+rewrite_digests.py
+rewrite_digests_v2.py
+migrate_to_daily.py

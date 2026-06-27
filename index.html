@@ -83,11 +83,16 @@
   .card .btn-detail { font-size:13px; font-weight:700; color:#fff; background:var(--c); border:none; border-radius:8px; padding:7px 14px; cursor:pointer; transition:.15s; }
   .card .btn-detail:hover { filter:brightness(.92); }
 
-  /* 当日综述区块 */
+  /* 本周综述区块 */
   .digest { margin: 4px 0 26px; padding: 20px 24px; background: linear-gradient(135deg,#fff, #fbfcff); border:1px solid #e7ebf5; border-radius:14px; box-shadow:0 2px 14px rgba(30,40,60,.05); }
   .digest .dh { display:flex; align-items:center; gap:10px; font-size:15px; font-weight:800; color:var(--c); margin-bottom:10px; }
-  .digest .dh::before { content:'今日综述'; font-size:11px; font-weight:700; color:#fff; background:var(--c); padding:3px 9px; border-radius:6px; letter-spacing:1px; }
-  .digest .dbody { font-size:14.5px; color:#3a4252; line-height:1.9; }
+  .digest .dh::before { content:'本周综述'; font-size:11px; font-weight:700; color:#fff; background:var(--c); padding:3px 9px; border-radius:6px; letter-spacing:1px; }
+  .digest .dbody { font-size:14.5px; color:#3a4252; line-height:1.9; position:relative; overflow:hidden; }
+  .digest .dbody.collapsed { max-height:300px; }
+  .digest .dbody.collapsed::after { content:''; position:absolute; left:0; right:0; bottom:0; height:90px; background:linear-gradient(to bottom, rgba(255,255,255,0), #fff); pointer-events:none; }
+  .digest .dtoggle { margin-top:12px; display:inline-flex; align-items:center; gap:6px; font-size:13.5px; font-weight:700; color:var(--c); background:transparent; border:none; cursor:pointer; padding:0; }
+  .digest .dtoggle:hover { text-decoration:underline; }
+  .digest .dmeta { font-size:12.5px; color:#8a93a6; margin-bottom:10px; }
   .digest .dbody p { margin-bottom:11px; }
   .digest .dbody p:last-child { margin-bottom:0; }
   .digest .dbody b { color:var(--c); font-weight:700; }
@@ -144,7 +149,7 @@
   <div class="grid" id="grid"></div>
 
   <footer>
-    每日精读 · 按日期归档，用右上角选择器查看历史<br>
+    每周精读 · 按日期归档，用右上角选择器查看历史<br>
     <span id="updated"></span>
   </footer>
 </div>
@@ -215,7 +220,7 @@ function render(){
   }
   document.getElementById('countText').textContent = '本类别 ' + papers.length + ' 篇';
 
-  // 当日综述（放在卡片列表最前面）
+  // 本周综述（放在卡片列表最前面）
   const digestBox = document.getElementById('digest');
   digestBox.innerHTML = '';
   const dtext = DAY.digests && DAY.digests[current];
@@ -234,9 +239,19 @@ function render(){
       });
       return '<p>' + h + '</p>';
     }).join('');
-    dd.innerHTML = '<div class="dh">'+esc(cat.name)+' · '+currentDate+'</div>'
-      + '<div class="dbody">'+body+'</div>';
+    const chars = dtext.replace(/\s/g,'').length;
+    dd.innerHTML = '<div class="dh">'+esc(cat.name)+'</div>'
+      + '<div class="dmeta">'+currentDate+' · 本类别 '+papers.length+' 篇 · 综述约 '+chars+' 字</div>'
+      + '<div class="dbody collapsed">'+body+'</div>'
+      + '<button class="dtoggle">▾ 展开全文</button>';
     digestBox.appendChild(dd);
+    // 折叠/展开
+    const dbodyEl = dd.querySelector('.dbody');
+    const toggleEl = dd.querySelector('.dtoggle');
+    toggleEl.onclick = ()=>{
+      const collapsed = dbodyEl.classList.toggle('collapsed');
+      toggleEl.textContent = collapsed ? '▾ 展开全文' : '▴ 收起';
+    };
     // 给综述里的论文引用绑定点击跳转
     dd.querySelectorAll('.paper-ref').forEach(a=>{
       a.onclick = ()=> jumpToPaper(a.getAttribute('data-date'), a.getAttribute('data-id'));

@@ -1,0 +1,85 @@
+name: Build & Deploy (relevance-research-daily)
+
+# 何时运行：
+#  1) 每周日定时（UTC 22:00 周六 ≈ 北京时间周日 06:00）——把最新数据 build 一遍，有变化就提交
+#  2) 当 data/ 或脚本变化被 push 到 main 时——自动重建内嵌数据并提交
+#  3) 在 Actions 页面手动点 "Run workflow"
+#
+# 部署：本工作流只负责 build + 提交回仓库。
+#       Netlify 已连接本 GitHub 仓库，检测到 main 有新提交后会自动构建并上线。
+on:
+  schedule:
+    - cron: "0 22 * * 6"      # 每周六 UTC 22:00（北京时间周日约 06:00）
+  push:
+    branches: [ main ]
+    paths:
+      - "data/**"
+      - "build.py"
+      - "new_day.py"
+      - "maintain.py"
+      - "index.html"
+  workflow_dispatch: {}        # 允许手动触发
+
+# 允许工作流把生成物提交回仓库
+permissions:
+  contents: write
+
+# 同一时间只跑一个，避免互相覆盖
+concurrency:
+  group: build-deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 仓库
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 重建索引与内嵌数据（查重 + 重建 index.json + build）
+        run: |
+          set -e
+          if [ -f new_day.py ]; then
+            python3 new_day.py      # 含跨全库查重、重建 index.json，并调用 build.py
+          else
+            python3 build.py
+          fi
+
+      - name: 校验生成物有效（防止把坏数据推上线）
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, sys
+          root = pathlib.Path(".")
+          # index.json 合法且至少一天
+          idx = json.loads((root/"data"/"index.json").read_text(encoding="utf-8"))
+          assert idx.get("days"), "index.json 没有任何日期"
+          # 内嵌数据合法（去掉 window.PAPERS_DATA = 前缀和结尾分号后能解析）
+          js = (root/"data"/"papers.inline.js").read_text(encoding="utf-8").strip()
+          assert js.startswith("window.PAPERS_DATA ="), "inline.js 头部异常"
+          payload = json.loads(js[js.index("=")+1:].rstrip(";").strip())
+          assert payload.get("days"), "inline.js 内无 days"
+          # 每个有效日期文件能解析、papers 非空
+          for d in idx["days"]:
+              day = json.loads((root/"data"/"days"/f"{d['date']}.json").read_text(encoding="utf-8"))
+              assert day.get("papers"), f"{d['date']} 没有论文"
+          print(f"校验通过：{len(idx['days'])} 天，最新 {idx.get('latest')}")
+          PY
+
+      - name: 有变化则提交回仓库（触发 Netlify 自动部署）
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # 只关心生成物的变化
+          git add data/index.json data/papers.inline.js data/days
+          if git diff --cached --quiet; then
+            echo "没有数据变化，无需提交。"
+          else
+            git commit -m "chore: 自动 build 数据 [skip ci]"
+            git push
+            echo "已提交并推送，Netlify 将自动部署。"
+          fi
