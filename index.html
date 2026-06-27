@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Query-物料相关性论文库 · Query–Material Relevance</title>
+<style>
+  :root { color-scheme: light; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #f4f6fb;
+    color: #1e2430;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 48px 28px 100px; }
+
+  header.top { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px; border-bottom: 3px solid #1e2430; padding-bottom: 20px; }
+  header.top h1 { font-size: 34px; font-weight: 800; letter-spacing: -.5px; }
+  header.top .en { font-size: 13px; color: #7a8499; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+  .datebox { text-align: right; }
+  .datebox .d { font-size: 18px; font-weight: 700; }
+  .datebox .c { display: inline-block; margin-top: 6px; background: #2f6df6; color: #fff; font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 100px; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 8px; }
+  .chip { font-size: 13.5px; font-weight: 600; padding: 8px 18px; border-radius: 100px; cursor: pointer; border: 2px solid transparent; background: #fff; color: #5a6478; transition: .18s; }
+  .chip:hover { transform: translateY(-1px); }
+  .chip .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:7px; vertical-align: middle; background: var(--c); }
+  .chip.active { color:#fff; background: var(--c); border-color: var(--c); }
+  .chip.active .dot { background:#fff; }
+
+  .section-intro { margin: 30px 0 22px; padding: 18px 22px; background:#fff; border-left: 5px solid var(--c); border-radius: 12px; box-shadow: 0 2px 14px rgba(30,40,60,.05); }
+  .section-intro h2 { font-size: 22px; font-weight: 800; }
+  .section-intro h2 .en { font-size: 13px; color:#9aa3b5; font-weight:600; margin-left:10px; letter-spacing:1px; }
+  .section-intro p { font-size: 14.5px; color:#5a6478; margin-top: 6px; }
+  .section-intro .n { font-size:13px; color: var(--c); font-weight:700; margin-top:8px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 20px; }
+  .card { background:#fff; border-radius:16px; padding:22px; box-shadow: 0 2px 14px rgba(30,40,60,.06); border-top: 4px solid var(--c); transition:.2s; display:flex; flex-direction:column; }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(30,40,60,.12); }
+  .card .tag { display:inline-block; align-self:flex-start; font-size:12px; font-weight:700; color:#fff; background: var(--c); padding:3px 10px; border-radius:6px; margin-bottom:12px; }
+  .card h3 { font-size:18px; font-weight:700; line-height:1.4; margin-bottom:8px; }
+  .card .src { font-size:12.5px; color:#8a93a6; margin-bottom:12px; }
+  .card p { font-size:14px; color:#444c5c; margin-bottom:14px; }
+  .card .pts { font-size:13px; color:#2c3340; background:#f4f6fb; border-radius:10px; padding:11px 14px; margin-top:auto; }
+  .card .pts b { color: var(--c); }
+  .card .link { display:inline-block; margin-top:14px; font-size:13px; font-weight:600; color: var(--c); text-decoration:none; }
+  .card .link:hover { text-decoration:underline; }
+  .card .actions { display:flex; gap:16px; align-items:center; margin-top:14px; flex-wrap:wrap; }
+  .card .actions .link { margin-top:0; }
+  .card .btn-detail { font-size:13px; font-weight:700; color:#fff; background:var(--c); border:none; border-radius:8px; padding:7px 14px; cursor:pointer; transition:.15s; }
+  .card .btn-detail:hover { filter:brightness(.92); }
+
+  /* 当日综述区块 */
+  .digest { margin: 4px 0 26px; padding: 20px 24px; background: linear-gradient(135deg,#fff, #fbfcff); border:1px solid #e7ebf5; border-radius:14px; box-shadow:0 2px 14px rgba(30,40,60,.05); }
+  .digest .dh { display:flex; align-items:center; gap:10px; font-size:15px; font-weight:800; color:var(--c); margin-bottom:10px; }
+  .digest .dh::before { content:'今日综述'; font-size:11px; font-weight:700; color:#fff; background:var(--c); padding:3px 9px; border-radius:6px; letter-spacing:1px; }
+  .digest .dbody { font-size:14.5px; color:#3a4252; line-height:1.9; }
+  .digest .dbody p { margin-bottom:11px; }
+  .digest .dbody p:last-child { margin-bottom:0; }
+  .digest .dbody b { color:var(--c); font-weight:700; }
+
+  /* 详解弹窗 */
+  .modal-mask { position:fixed; inset:0; background:rgba(20,26,40,.55); display:none; align-items:flex-start; justify-content:center; padding:40px 16px; z-index:50; overflow-y:auto; }
+  .modal-mask.show { display:flex; }
+  .modal { background:#fff; max-width:760px; width:100%; border-radius:18px; padding:32px 34px 38px; box-shadow:0 20px 60px rgba(20,26,40,.3); border-top:6px solid var(--c); animation:pop .18s ease; }
+  @keyframes pop { from{transform:translateY(12px);opacity:0;} to{transform:none;opacity:1;} }
+  .modal .mtag { display:inline-block; font-size:12px; font-weight:700; color:#fff; background:var(--c); padding:3px 11px; border-radius:6px; }
+  .modal h2 { font-size:23px; font-weight:800; line-height:1.4; margin:12px 0 8px; }
+  .modal .msrc { font-size:13px; color:#8a93a6; margin-bottom:20px; }
+  .modal .mexplain { font-size:15.5px; color:#2c3340; line-height:2; }
+  .modal .mexplain p { margin-bottom:14px; }
+  .modal .mexplain p:last-child { margin-bottom:0; }
+  .modal .mexplain b { color:var(--c); font-weight:700; }
+  .modal .mfoot { margin-top:24px; padding-top:18px; border-top:1px solid #eef1f7; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+  .modal .mfoot a { font-size:14px; font-weight:700; color:var(--c); text-decoration:none; }
+  .modal .mclose { position:fixed; top:24px; right:28px; width:40px; height:40px; border-radius:50%; border:none; background:#fff; color:#1e2430; font-size:22px; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.15); z-index:51; }
+  body.modal-open { overflow:hidden; }
+
+  footer { text-align:center; margin-top:64px; color:#9aa3b5; font-size:13px; line-height:1.9; }
+  .empty { text-align:center; color:#9aa3b5; padding:60px 0; font-size:15px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 id="siteTitle">相关性论文日报</h1>
+      <div class="en" id="siteSub">Relevance Research Daily</div>
+    </div>
+    <div class="datebox">
+      <div class="d" id="dateText">—</div>
+      <div class="c" id="countText">—</div>
+    </div>
+  </header>
+
+  <nav class="filters" id="filters"></nav>
+  <div id="intro"></div>
+  <div id="digest"></div>
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    每日精读 · 数据来源于 <code>data/papers.json</code>，每天更新<br>
+    <span id="updated"></span>
+  </footer>
+</div>
+
+<!-- 详解弹窗 -->
+<div class="modal-mask" id="modalMask">
+  <button class="mclose" id="modalClose" aria-label="关闭">×</button>
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<script>
+const COLORS = {};
+let DATA = null;
+let current = null;
+
+function esc(s){ return String(s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function render(){
+  const cats = DATA.categories;
+  document.getElementById('siteTitle').textContent = DATA.meta.title;
+  document.getElementById('siteSub').textContent = DATA.meta.subtitle;
+  const today = DATA.papers.length;
+  document.getElementById('dateText').textContent = DATA.meta.lastUpdated.replace(/-/g,' / ');
+  document.getElementById('updated').textContent = '最近更新：' + DATA.meta.lastUpdated;
+
+  // build filters
+  const fbox = document.getElementById('filters');
+  fbox.innerHTML = '';
+  cats.forEach(cat => {
+    COLORS[cat.id] = cat.color;
+    const b = document.createElement('button');
+    b.className = 'chip' + (cat.id===current ? ' active':'');
+    b.style.setProperty('--c', cat.color);
+    b.innerHTML = '<span class="dot"></span>' + esc(cat.name);
+    b.onclick = ()=>{ current = cat.id; render(); window.scrollTo({top:0,behavior:'smooth'}); };
+    fbox.appendChild(b);
+  });
+
+  const cat = cats.find(c=>c.id===current);
+  const papers = DATA.papers.filter(p=>p.category===current);
+
+  // section intro
+  const intro = document.getElementById('intro');
+  intro.innerHTML = '';
+  if(cat){
+    const div = document.createElement('div');
+    div.className = 'section-intro';
+    div.style.setProperty('--c', cat.color);
+    div.innerHTML = '<h2>'+esc(cat.name)+'<span class="en">'+esc(cat.en)+'</span></h2>'
+      + '<p>'+esc(cat.desc)+'</p>'
+      + '<div class="n">本类别共 '+papers.length+' 篇</div>';
+    intro.appendChild(div);
+  }
+  document.getElementById('countText').textContent = '本类别 ' + papers.length + ' 篇';
+
+  // 当日综述（放在卡片列表最前面）
+  const digestBox = document.getElementById('digest');
+  digestBox.innerHTML = '';
+  const dtext = DATA.digests && DATA.digests[current];
+  if(dtext){
+    const dd = document.createElement('div');
+    dd.className = 'digest';
+    dd.style.setProperty('--c', cat.color);
+    // 综述按空行分段；把【小标题】加粗
+    const body = dtext.split('\n\n').map(para =>
+      '<p>' + esc(para).replace(/【([^】]+)】/g, '<b>【$1】</b>') + '</p>'
+    ).join('');
+    dd.innerHTML = '<div class="dh">'+esc(cat.name)+' · '+DATA.meta.lastUpdated+'</div>'
+      + '<div class="dbody">'+body+'</div>';
+    digestBox.appendChild(dd);
+  }
+
+  // cards
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  if(papers.length===0){
+    grid.innerHTML = '<div class="empty">该类别今日暂无论文</div>';
+    return;
+  }
+  papers.forEach((p, idx)=>{
+    const c = document.createElement('div');
+    c.className = 'card';
+    c.style.setProperty('--c', COLORS[p.category]);
+    const detailBtn = p.explain ? '<button class="btn-detail">📖 小白详解</button>' : '';
+    const link = p.url ? '<a class="link" href="'+esc(p.url)+'" target="_blank" rel="noopener">阅读原文 ↗</a>' : '';
+    c.innerHTML =
+      '<span class="tag">'+esc(cat.name)+'</span>'
+      + '<h3>'+esc(p.title)+'</h3>'
+      + '<div class="src">'+esc(p.source)+' · '+esc(p.venue)+(p.tag?' · '+esc(p.tag):'')+'</div>'
+      + '<p>'+esc(p.summary)+'</p>'
+      + '<div class="pts"><b>核心贡献：</b>'+esc(p.contrib)+'</div>'
+      + '<div class="actions">'+detailBtn+link+'</div>';
+    const btn = c.querySelector('.btn-detail');
+    if(btn){ btn.onclick = ()=>openModal(p, cat); }
+    grid.appendChild(c);
+  });
+}
+
+// ===== 详解弹窗 =====
+function openModal(p, cat){
+  const box = document.getElementById('modalBox');
+  box.style.setProperty('--c', cat.color);
+  const link = p.url ? '<a href="'+esc(p.url)+'" target="_blank" rel="noopener">阅读原文 ↗</a>' : '<span></span>';
+  const explainHtml = (p.explain || '暂无详解').split('\n\n').map(para =>
+    '<p>' + esc(para).replace(/【([^】]+)】/g, '<b>【$1】</b>') + '</p>'
+  ).join('');
+  box.innerHTML =
+    '<span class="mtag">'+esc(cat.name)+'</span>'
+    + '<h2>'+esc(p.title)+'</h2>'
+    + '<div class="msrc">'+esc(p.source)+' · '+esc(p.venue)+(p.tag?' · '+esc(p.tag):'')+'</div>'
+    + '<div class="mexplain">'+explainHtml+'</div>'
+    + '<div class="mfoot">'+link+'<span style="font-size:12px;color:#aab;">按 Esc 或点空白处关闭</span></div>';
+  document.getElementById('modalMask').classList.add('show');
+  document.body.classList.add('modal-open');
+}
+function closeModal(){
+  document.getElementById('modalMask').classList.remove('show');
+  document.body.classList.remove('modal-open');
+}
+
+function boot(data){
+  DATA = data;
+  current = DATA.categories[0].id;
+  render();
+}
+
+// 加载策略：
+// 1) 用本地服务器(http/https)打开 → fetch 读取 data/papers.json（改完即生效）
+// 2) 直接双击(file://)打开 → fetch 会被浏览器 CORS 拦截，直接用内嵌的 PAPERS_DATA
+function loadFromFetch(){
+  fetch('data/papers.json')
+    .then(r=>{ if(!r.ok) throw new Error('bad status'); return r.json(); })
+    .then(boot)
+    .catch(useInline);
+}
+function useInline(){
+  if(window.PAPERS_DATA){ boot(window.PAPERS_DATA); }
+  else {
+    document.getElementById('grid').innerHTML =
+      '<div class="empty">无法加载数据。请用本地服务器打开（见 README），或运行 build 脚本生成内嵌数据。</div>';
+  }
+}
+// file:// 下 fetch 不可靠，直接走内嵌数据；否则尝试 fetch，失败再回退内嵌。
+// 注意：内嵌数据脚本 papers.inline.js 在本脚本之后加载，
+// 因此必须等到 DOM 解析完（DOMContentLoaded）再读取 window.PAPERS_DATA。
+function start(){
+  // 弹窗关闭事件
+  document.getElementById('modalClose').onclick = closeModal;
+  document.getElementById('modalMask').addEventListener('click', e=>{
+    if(e.target === document.getElementById('modalMask')) closeModal();
+  });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+  if(location.protocol === 'file:'){
+    useInline();
+  } else {
+    try { loadFromFetch(); } catch(e) { useInline(); }
+  }
+}
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', start);
+} else {
+  start();
+}
+</script>
+<!-- 内嵌数据：双击直接打开时使用。由 build.py 自动从 data/papers.json 生成，请勿手改。 -->
+<script src="data/papers.inline.js"></script>
+</body>
+</html>
