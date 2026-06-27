@@ -1,0 +1,39 @@
+{
+  "categories": [
+    {
+      "id": "neural-match",
+      "name": "Query-文档相关性",
+      "en": "Query–Document Relevance",
+      "color": "#2f6df6",
+      "desc": "判断「一个查询和一篇文档/段落到底相不相关」的核心模型：交互式匹配、cross-encoder 重排序等奠基与经典工作。这是相关性判别最本源的一脉。"
+    },
+    {
+      "id": "retrieval",
+      "name": "稠密 / 稀疏检索",
+      "en": "Dense & Sparse Retrieval",
+      "color": "#179a6b",
+      "desc": "把 query 与物料编码到同一空间做相关性召回：双塔、ColBERT 后交互、学习稀疏检索、难负样本与蒸馏。"
+    },
+    {
+      "id": "llm-judge",
+      "name": "LLM 相关性判别",
+      "en": "LLM as Relevance Judge",
+      "color": "#7b46d6",
+      "desc": "用大语言模型为 query-物料对打相关性标签、做列表重排、生成训练数据，以及由此带来的偏差与可解释性研究。"
+    },
+    {
+      "id": "ecommerce",
+      "name": "电商 / 广告 Query-物料",
+      "en": "E-commerce & Ad Relevance",
+      "color": "#e0653b",
+      "desc": "工业界 query 与商品、广告、落地页的相关性判别：电商搜索、赞助搜索、多模态商品匹配、在线部署与延迟约束。"
+    },
+    {
+      "id": "query-rl",
+      "name": "查询理解与 RL 优化",
+      "en": "Query Understanding & RL",
+      "color": "#c2326b",
+      "desc": "对 query 本身的改写、扩展、意图理解，以及用强化学习直接以相关性为奖励优化检索与改写策略。"
+    }
+  ]
+}
