@@ -1,0 +1,26 @@
+{
+  "date": "YYYY-MM-DD",
+  "title": "Query-物料相关性论文库",
+  "subtitle": "Query–Material Relevance Research",
+  "digests": {
+    "neural-match": "这天「Query-文档相关性」类的综述：点名当天具体论文（用 [[id|《名》]] 标记可跳转），讲清出发点与创新点；若某篇是历史论文的优化/续作，用 [[历史日期:历史id|《名》]] 引用，如 [[2026-06-28:drmm|《DRMM》]]。",
+    "retrieval": "这天「稠密/稀疏检索」类的综述……",
+    "llm-judge": "这天「LLM 相关性判别」类的综述……",
+    "ecommerce": "这天「电商/广告 Query-物料」类的综述……",
+    "query-rl": "这天「查询理解与 RL 优化」类的综述……"
+  },
+  "papers": [
+    {
+      "category": "neural-match",
+      "id": "唯一短标识（综述里用 [[id|名]] 引用它，跨日期也用这个 id）",
+      "title": "论文标题",
+      "source": "机构/作者",
+      "venue": "会议/期刊/arXiv 年份",
+      "tag": "细分标签",
+      "summary": "2-4 句的综述总结，讲清动机与做法。",
+      "contrib": "① …；② …；③ …",
+      "explain": "【背景问题】…\n\n【核心思路】…\n\n【创新点】…\n\n【为什么重要】…\n\n【打个比方】…\n\n【局限】…",
+      "url": "https://...  (含 arXiv 编号，便于跨全库查重)"
+    }
+  ]
+}
